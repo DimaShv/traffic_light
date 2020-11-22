@@ -11,8 +11,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.Deque;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Log4j2
 @Component
@@ -20,8 +20,8 @@ public class CrossroadImpl implements Crossroad {
     private final Randomizer randomizer;
     private final TrafficLight trafficLight;
     private final CrossroadLogRepository crossRoadLogRepository;
-    private final Deque<Car> xDirectionQueue = new ConcurrentLinkedDeque<>();
-    private final Deque<Car> yDirectionQueue = new ConcurrentLinkedDeque<>();
+    private final Queue<Car> xDirectionQueue = new ConcurrentLinkedQueue<>();
+    private final Queue<Car> yDirectionQueue = new ConcurrentLinkedQueue<>();
 
     public CrossroadImpl(TrafficLight trafficLight, CrossroadLogRepository crossRoadLogRepository, Randomizer randomizer) {
         this.trafficLight = trafficLight;
@@ -35,9 +35,9 @@ public class CrossroadImpl implements Crossroad {
         if ((greenLightDirection == Direction.X && !isTrafficOffender)
                 ||
             (greenLightDirection == Direction.Y && isTrafficOffender)) {
-            car = xDirectionQueue.pollFirst();
+            car = xDirectionQueue.poll();
         } else {
-            car = yDirectionQueue.pollFirst();
+            car = yDirectionQueue.poll();
         }
         if (car != null) {
             CrossroadLog crossRoadLog = new CrossroadLog(car.getId(),
@@ -61,10 +61,10 @@ public class CrossroadImpl implements Crossroad {
 
     public void passTheTrafficLight(Car car) {
         if (Direction.X == car.getDirection()) {
-            xDirectionQueue.push(car);
+            xDirectionQueue.add(car);
             log.info("xDirection size: {}", xDirectionQueue.size());
         } else {
-            yDirectionQueue.push(car);
+            yDirectionQueue.add(car);
             log.info("yDirection size: {}", yDirectionQueue.size());
         }
     }
